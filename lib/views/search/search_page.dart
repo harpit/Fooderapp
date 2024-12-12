@@ -1,0 +1,72 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:foodapp/Constants/constant.dart';
+import 'package:foodapp/Controller/search_controller.dart';
+import 'package:foodapp/common/custom_container.dart';
+import 'package:foodapp/common/custom_text_field.dart';
+import 'package:foodapp/common/shimmers/foodlist_shimmer.dart';
+import 'package:foodapp/views/search/loading_widget.dart';
+import 'package:foodapp/views/search/search_results.dart';
+import 'package:get/get.dart';
+
+class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  final TextEditingController _searchController = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.put(SearchFoodController());
+    return Obx(() => Scaffold(
+        backgroundColor: kPrimary,
+        appBar: AppBar(
+          toolbarHeight: 76.h,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          title: Padding(
+            padding: EdgeInsets.only(top: 16.h),
+            child: CustomTextWidget(
+              controller: _searchController,
+              keyboardType: TextInputType.text,
+              hintText: "Search For Foods",
+              suffixIcon: GestureDetector(
+                  onTap: () {
+                    if (controller.isTriggered == false) {
+                      controller.searchFoods(_searchController.text);
+                      controller.setTriggered = true;
+                    } else {
+                      controller.searchResults = null;
+                      controller.setTriggered = false;
+                      _searchController.clear();
+                    }
+                  },
+                  child:controller.isTriggered == false ?
+                Icon(
+                   Ionicons.search_circle,
+                    size: 40.h,
+                    color: kPrimary,
+                  ):Icon(
+                    Ionicons.close_circle,
+                    size: 40.h,
+                    color: kRed,
+                  )),
+            ),
+          ),
+        ),
+        body: SafeArea(
+          child: CustomContainer(
+              color: Colors.white,
+              containerContent: controller.isLoading
+                  ? const FoodsListShimmer()
+                  : controller.searchResults == null
+                      ? const LoadingWidget()
+                      : const SearchResult()),
+        )));
+  }
+}
